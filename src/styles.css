@@ -1,0 +1,201 @@
+:root {
+  --bg: #08080c;
+  --ink: #e8e4d7;
+  --ink-dim: rgba(232, 228, 215, 0.5);
+  --accent: #d9b08c;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background: radial-gradient(circle at 50% 45%, #11131a 0%, #08080c 70%);
+}
+
+.viz {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  display: block;
+}
+
+/* ── Title ─────────────────────────────────────────────────────────────── */
+.hud-top {
+  position: absolute;
+  top: clamp(18px, 4vh, 40px);
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.hud-top h1 {
+  font-size: clamp(22px, 4.5vw, 40px);
+  font-weight: 500;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  color: var(--ink);
+}
+
+.hud-top .tag {
+  margin-top: 8px;
+  font-size: clamp(9px, 1.4vw, 12px);
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+  color: var(--ink-dim);
+  text-transform: lowercase;
+}
+
+/* ── Gate (gesture to start audio) ─────────────────────────────────────── */
+.gate {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  height: 100%;
+  width: 100%;
+  display: grid;
+  place-content: center;
+  gap: 24px;
+  background: transparent;
+  border: none;
+  color: var(--ink);
+  cursor: pointer;
+  z-index: 3;
+}
+
+.gate-ring {
+  width: clamp(90px, 18vw, 150px);
+  height: clamp(90px, 18vw, 150px);
+  border: 1px solid var(--ink-dim);
+  border-radius: 50%;
+  margin: 0 auto;
+  animation: breathe 3.4s ease-in-out infinite;
+}
+
+.gate-label {
+  font-size: clamp(11px, 1.6vw, 14px);
+  letter-spacing: 0.36em;
+  text-indent: 0.36em;
+  color: var(--ink-dim);
+  text-transform: lowercase;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.45; }
+  50% { transform: scale(1.12); opacity: 0.9; }
+}
+
+/* ── Bottom HUD + keyboard ─────────────────────────────────────────────── */
+.hud-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16px clamp(12px, 4vw, 48px) clamp(16px, 3vh, 28px);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: linear-gradient(to top, rgba(8, 8, 12, 0.85), transparent);
+}
+
+.hint {
+  text-align: center;
+  font-size: clamp(10px, 1.5vw, 13px);
+  letter-spacing: 0.24em;
+  color: var(--ink-dim);
+  text-transform: lowercase;
+}
+
+.keys {
+  position: relative;
+  display: flex;
+  height: clamp(90px, 16vh, 150px);
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.key {
+  position: relative;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  transition: background 0.06s ease, transform 0.06s ease;
+}
+
+.key.white {
+  background: linear-gradient(to bottom, #f3efe2, #d9d4c4);
+  border-right: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 0 0 4px 4px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+  color: rgba(0, 0, 0, 0.32);
+  font-size: 9px;
+  letter-spacing: 0.05em;
+}
+
+.key.white.on {
+  background: linear-gradient(to bottom, var(--accent), #c69873);
+}
+
+.key.black {
+  position: absolute;
+  top: 0;
+  height: 62%;
+  background: linear-gradient(to bottom, #1c1d22, #0a0a0e);
+  border-radius: 0 0 3px 3px;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.key.black.on {
+  background: linear-gradient(to bottom, #8a6646, var(--accent));
+}
+
+.key:active {
+  transform: translateY(1px);
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  max-width: 920px;
+  width: 100%;
+  margin: 0 auto;
+  font-size: clamp(8px, 1.2vw, 11px);
+  letter-spacing: 0.16em;
+  color: var(--ink-dim);
+  text-transform: lowercase;
+}
+
+.midi-connected { color: var(--accent); }
+.midi-unavailable,
+.midi-denied { opacity: 0.4; }
