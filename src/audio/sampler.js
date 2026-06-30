@@ -11,6 +11,7 @@ export class Sampler {
     this.voices = new Map() // midi -> { src, gain }
     this.attack = 0.02
     this.release = 0.4
+    this.modSource = null // vibrato LFO -> connected to each voice's detune
   }
 
   addNote(midi, buffer) {
@@ -53,6 +54,8 @@ export class Sampler {
     src.buffer = sample.buffer
     src.loop = true
     src.playbackRate.value = rate
+    // Vibrato: the shared LFO modulates each voice's detune (in cents).
+    if (this.modSource) this.modSource.connect(src.detune)
 
     const gain = ctx.createGain()
     gain.gain.setValueAtTime(0.0001, t)

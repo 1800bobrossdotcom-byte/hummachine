@@ -132,6 +132,155 @@ body {
   text-transform: lowercase;
 }
 
+/* ── Faceplate: LED browser + knob bank ────────────────────────────────── */
+.panel {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  align-items: stretch;
+}
+
+.led {
+  flex: 0 0 clamp(190px, 26vw, 240px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.led-screen {
+  position: relative;
+  flex: 1;
+  min-height: 96px;
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: radial-gradient(circle at 50% 30%, #241704 0%, #120c02 100%);
+  border: 1px solid #3a2a0e;
+  box-shadow: inset 0 0 18px rgba(245, 184, 92, 0.18), 0 0 14px rgba(245, 184, 92, 0.08);
+  overflow: hidden;
+  color: #f5b85c;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+
+.led-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-shadow: 0 0 6px rgba(245, 184, 92, 0.7);
+  opacity: 0.85;
+}
+
+.led-name {
+  font-size: clamp(15px, 2.2vw, 20px);
+  letter-spacing: 0.16em;
+  margin: 3px 0 5px;
+  text-shadow: 0 0 8px rgba(245, 184, 92, 0.85);
+}
+
+.led-canvas {
+  width: 100%;
+  height: 38px;
+  display: block;
+}
+
+.led-bottom {
+  margin-top: 5px;
+}
+
+.led-scan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.22) 3px
+  );
+  mix-blend-mode: multiply;
+}
+
+.led-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.led-btn {
+  flex: 1;
+  padding: 6px 0;
+  background: #16110a;
+  border: 1px solid #3a2a0e;
+  border-radius: 4px;
+  color: #f5b85c;
+  font: inherit;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  transition: background 0.1s, box-shadow 0.1s;
+}
+
+.led-btn:hover {
+  background: #221808;
+  box-shadow: 0 0 8px rgba(245, 184, 92, 0.3);
+}
+
+.led-btn.save {
+  flex: 1.6;
+  color: #1a1206;
+  background: #f5b85c;
+  font-weight: 600;
+}
+
+.led-btn.save:hover {
+  background: #ffca74;
+}
+
+.knobs {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));
+  gap: 8px 4px;
+  align-content: center;
+  justify-items: center;
+}
+
+.knob {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  width: 52px;
+}
+
+.knob-dial {
+  touch-action: none;
+  cursor: ns-resize;
+}
+
+.knob-track { fill: none; stroke: rgba(232, 228, 215, 0.12); stroke-width: 3; }
+.knob-arc { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; filter: drop-shadow(0 0 3px rgba(217, 176, 140, 0.6)); }
+.knob-cap { fill: #1a1c22; stroke: rgba(232, 228, 215, 0.18); stroke-width: 1; }
+.knob-pointer { stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
+
+.knob-label {
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  color: var(--ink-dim);
+}
+
+.knob-value {
+  font-size: 9px;
+  color: var(--accent);
+}
+
+@media (max-width: 640px) {
+  .panel { flex-direction: column; gap: 10px; }
+  .led { flex-basis: auto; }
+}
+
 .keys {
   position: relative;
   display: flex;
