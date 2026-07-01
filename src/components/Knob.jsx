@@ -6,8 +6,14 @@ import { useCallback, useRef } from 'react'
 const ARC = 270 // degrees of travel
 const START = -135 // degrees (pointing down-left)
 
-function toNorm(spec, value) {
-  const { min, max, curve } = spec
+// Normalize a spec so stepped (enumerated) knobs share the rotary math.
+function range(spec) {
+  if (spec.steps) return { min: 0, max: spec.steps.length - 1, curve: 'lin', stepped: true }
+  return { min: spec.min, max: spec.max, curve: spec.curve, stepped: false }
+}
+
+function toNorm(rawSpec, value) {
+  const { min, max, curve } = range(rawSpec)
   if (curve === 'log') {
     const lo = Math.log(Math.max(min, 1e-6))
     const hi = Math.log(max)
@@ -16,22 +22,23 @@ function toNorm(spec, value) {
   return (value - min) / (max - min)
 }
 
-function fromNorm(spec, norm) {
-  const { min, max, curve } = spec
+function fromNorm(rawSpec, norm) {
+  const { min, max, curve, stepped } = range(rawSpec)
   const n = Math.min(1, Math.max(0, norm))
   if (curve === 'log') {
     const lo = Math.log(Math.max(min, 1e-6))
     const hi = Math.log(max)
     return Math.exp(lo + (hi - lo) * n)
   }
-  return min + (max - min) * n
+  const v = min + (max - min) * n
+  return stepped ? Math.round(v) : v
 }
 
 function format(spec, value) {
+  if (spec.steps) return spec.steps[Math.round(value)] ?? '—'
   const { unit, max } = spec
   if (unit === 'hz') return value >= 1000 ? `${(value / 1000).toFixed(1)}k` : `${Math.round(value)}`
   if (unit === 's') return value < 1 ? `${Math.round(value * 1000)}ms` : `${value.toFixed(2)}s`
-  if (unit === 'ct') return `${Math.round(value)}`
   if (max <= 1) return `${Math.round(value * 100)}`
   return value.toFixed(1)
 }

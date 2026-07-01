@@ -24,6 +24,20 @@ export class Engine {
     this._cleanups = []
     this.activeNotes = new Set()
     this.midiStatus = 'idle'
+    this.gateCount = 0
+  }
+
+  // Mono gate: opens on the first held note, closes when the last releases.
+  // Fed by both the human inputs and the auto-player so patched envelopes fire
+  // in either mode.
+  gateOn() {
+    if (this.gateCount === 0 && this.modular) this.modular.gateOn()
+    this.gateCount++
+  }
+
+  gateOff() {
+    this.gateCount = Math.max(0, this.gateCount - 1)
+    if (this.gateCount === 0 && this.modular) this.modular.gateOff()
   }
 
   on(fn) {
@@ -58,8 +72,12 @@ export class Engine {
     modular.applyParams(params)
     modular.setCables(cables)
 
-    // Generative auto-player.
-    this.auto = new AutoPlayer(ctx, sampler, { onNote: (midi) => this._flash(midi) })
+    // Generative auto-player (also drives the gate so envelopes breathe on idle).
+    this.auto = new AutoPlayer(ctx, sampler, {
+      onNote: (midi) => this._flash(midi),
+      onGateOn: () => this.gateOn(),
+      onGateOff: () => this.gateOff(),
+    })
     this.auto.start()
 
     // Inputs.
@@ -119,6 +137,7 @@ export class Engine {
     if (!this.ctx) return
     this._takeover()
     this.sampler.noteOn(midi, velocity)
+    this.gateOn()
     this.activeNotes.add(midi)
     this._emit({ type: 'noteon', midi })
   }
@@ -126,6 +145,7 @@ export class Engine {
   noteOff(midi) {
     if (!this.ctx) return
     this.sampler.noteOff(midi)
+    this.gateOff()
     this.activeNotes.delete(midi)
     this._emit({ type: 'noteoff', midi })
   }
@@ -135,6 +155,7 @@ export class Engine {
     this._cleanups = []
     if (this.auto) this.auto.stop()
     if (this.sampler) this.sampler.allOff()
+    if (this.modular) this.modular.dispose()
     if (this.ctx) this.ctx.close()
   }
 }

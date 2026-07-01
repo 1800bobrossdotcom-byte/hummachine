@@ -111,20 +111,20 @@ body {
 .led-btn.save:hover { background: #ffca74; }
 
 /* ── Rack + modules ────────────────────────────────────────────────────── */
-.rack-scroll { flex: 1; overflow: auto; padding: 6px clamp(10px, 3vw, 28px); }
+.rack-scroll { flex: 1; overflow: auto; padding: 6px clamp(10px, 3vw, 28px); display: flex; align-items: center; }
 .rack {
   position: relative;
-  display: flex; gap: 8px;
+  display: flex; gap: 7px;
   width: max-content; min-width: 100%;
-  min-height: 100%;
+  margin: auto;
   justify-content: center;
 }
 
 .module {
   position: relative; z-index: 1;
-  flex: 0 0 clamp(104px, 12vw, 132px);
-  display: flex; flex-direction: column; align-items: center; gap: 8px;
-  padding: 8px 8px 10px;
+  flex: 0 0 clamp(92px, 10.5vw, 118px);
+  display: flex; flex-direction: column; align-items: center; gap: 7px;
+  padding: 7px 7px 9px;
   background: linear-gradient(160deg, var(--panel-hi), var(--panel));
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 5px;
@@ -132,9 +132,16 @@ body {
 }
 .module-title {
   width: 100%; text-align: center;
-  font-size: 9px; letter-spacing: 0.2em; color: var(--ink-dim);
+  font-size: 9px; letter-spacing: 0.16em; color: var(--ink-dim);
   padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06);
 }
+/* Group accents: modulation sources amber, utilities blue. */
+.module-env, .module-lfo, .module-sh { border-top: 2px solid rgba(245,184,92,0.55); }
+.module-env .module-title, .module-lfo .module-title, .module-sh .module-title { color: rgba(245,184,92,0.7); }
+.module-mix, .module-mult { border-top: 2px solid rgba(93,176,232,0.5); }
+.module-mix .module-title, .module-mult .module-title { color: rgba(93,176,232,0.7); }
+.module-voice { border-top: 2px solid rgba(232,228,215,0.4); }
+.module-out { border-top: 2px solid rgba(140,232,140,0.4); }
 .module-knobs { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 2px; flex: 1; align-content: flex-start; }
 .module-jacks { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: auto; padding-top: 6px; }
 

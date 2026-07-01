@@ -5,10 +5,12 @@ import { SCALES, scaleNotes } from './theory.js'
 // over. Uses the standard Web Audio lookahead scheduler so timing is rock solid.
 
 export class AutoPlayer {
-  constructor(ctx, sampler, { onNote } = {}) {
+  constructor(ctx, sampler, { onNote, onGateOn, onGateOff } = {}) {
     this.ctx = ctx
     this.sampler = sampler
     this.onNote = onNote || (() => {})
+    this.onGateOn = onGateOn || (() => {})
+    this.onGateOff = onGateOff || (() => {})
     this.running = false
     this.timer = null
 
@@ -34,7 +36,7 @@ export class AutoPlayer {
   stop() {
     this.running = false
     if (this.timer) clearTimeout(this.timer)
-    for (const m of this.held) this.sampler.noteOff(m)
+    for (const release of this.held) release()
     this.held = []
   }
 
@@ -69,21 +71,27 @@ export class AutoPlayer {
     }
 
     // Release older held notes so the texture keeps breathing.
-    while (this.held.length > 2) {
-      const m = this.held.shift()
-      this.sampler.noteOff(m, time)
-    }
+    while (this.held.length > 2) this.held.shift()()
 
     const r = Math.random()
     if (r < 0.72) {
       const midi = this._pick()
       const vel = (0.25 + Math.random() * 0.3) * this.gain
       this.sampler.noteOn(midi, vel, time)
-      this.held.push(midi)
       this.onNote(midi, 'auto')
-      // Schedule its release for a sustained, overlapping wash.
+      this.onGateOn()
+      // Each note releases exactly once — whether by the cleanup loop above or
+      // its own timer — so the gate count stays balanced.
+      let released = false
+      const release = () => {
+        if (released) return
+        released = true
+        this.sampler.noteOff(midi, this.ctx.currentTime)
+        this.onGateOff()
+      }
+      this.held.push(release)
       const dur = 0.8 + Math.random() * 1.6
-      setTimeout(() => this.sampler.noteOff(midi, this.ctx.currentTime), dur * 1000)
+      setTimeout(release, dur * 1000)
     } else if (r < 0.85 && this.sampler.phrases.length) {
       this.sampler.playPhrase(Math.floor(Math.random() * this.sampler.phrases.length), 0.3 * this.gain, time)
     }

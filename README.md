@@ -9,10 +9,15 @@ external links, nothing to rot — the token *is* the synth.
 
 ## What it does
 
-- **A patchable modular rack.** Eight Eurorack-style modules — VOICES · LFO ·
-  FILTER · DRIVE · DELAY · REVERB · VCA · OUTPUT — with real jacks. **Drag virtual
-  patch cables** between them to rewire audio *and* CV routing live; grab a
-  patched input to repatch it.
+- **A patchable modular rack.** Thirteen Eurorack-style modules — VOICES · ENV ·
+  LFO · LFO 2 · S&H · FILTER · DRIVE · DELAY · REVERB · MIX · MULT · VCA · OUTPUT
+  — with real jacks. **Drag virtual patch cables** between them to rewire audio
+  *and* CV routing live; grab a patched input to repatch it; **right-click (or
+  double-click) a jack to unpatch** it.
+- **Modulation sources**: a gate-driven ADSR **envelope**, two **LFOs** (with
+  SIN/TRI/SQR/SAW shapes), and a random **sample & hold** — patch them into the
+  filter, VCA, or anywhere that takes CV. Utility **MIX** (3→1) and **MULT** (1→3)
+  for parallel routing and splits.
 - **Auto-plays** on open: a slow, evolving wash of held hums and phrases.
 - **Take over any time** — the moment you play a note, it hands you control.
 - **Polyphonic** sampler: play chords; all voices flow through the patched chain.
@@ -27,8 +32,14 @@ external links, nothing to rot — the token *is* the synth.
 
 Default cabling: `VOICES → FILTER → DRIVE → DELAY → REVERB → VCA → OUTPUT`, with
 the `LFO → FILTER` CV sweep. Drag from any jack to a compatible one (audio↔audio,
-CV↔CV, output↔input) to rewire. Each knob and every cable is captured when you
-**SAVE** a patch, and restored when you browse presets.
+CV↔CV, output↔input) to rewire; right-click a jack to unpatch. Each knob and every
+cable is captured when you **SAVE** a patch, and restored when you browse presets.
+Factory presets (INIT, CATHEDRAL, DUB ECHO, WOBBLE, GRIT, TREMOLO, S&H RAND, SLOW
+DRIFT, ENV SWEEP) show off different routings.
+
+The envelope's gate opens on the first held note and closes on the last — fed by
+both your playing and the idle auto-player, so a patched envelope breathes either
+way. Polyphony is shared-chain: all voices sum through the patched modules.
 
 Until you add recordings, it runs on procedurally-generated placeholder hum tones,
 so it's fully playable today.

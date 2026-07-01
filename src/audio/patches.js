@@ -1,4 +1,7 @@
-import { defaultModuleParams, DEFAULT_CABLES } from './modules.js'
+import { defaultModuleParams, DEFAULT_CABLES, CORE_CHAIN } from './modules.js'
+
+// Core audio chain + one modulation cable, for presets that only rewire the mod.
+const withMod = (...mod) => [...CORE_CHAIN.map((c) => [...c]), ...mod]
 
 // Patch storage for the modular. A patch captures BOTH knob values (per module)
 // and the full cable routing, so recalling a patch rebuilds the whole instrument.
@@ -32,15 +35,32 @@ export const FACTORY_PATCHES = [
     params: { drive: { drive: 0.55 }, vcf: { cutoff: 5200, res: 5 }, reverb: { mix: 0.22 } },
   },
   {
-    // Demonstrates repatching: LFO drives the VCA for tremolo instead of the filter.
+    // Repatch: LFO drives the VCA for tremolo instead of the filter.
     name: 'TREMOLO',
     factory: true,
     params: { lfo: { rate: 6 }, vca: { cv: 0.85, level: 0.7 } },
-    cables: [
-      ['voice.out', 'vcf.in'], ['vcf.out', 'drive.in'], ['drive.out', 'delay.in'],
-      ['delay.out', 'reverb.in'], ['reverb.out', 'vca.in'], ['vca.out', 'out.in'],
-      ['lfo.out', 'vca.cv'],
-    ],
+    cables: withMod(['lfo.out', 'vca.cv']),
+  },
+  {
+    // Sample & Hold steps the filter — burbling, generative.
+    name: 'S&H RAND',
+    factory: true,
+    params: { sh: { rate: 7 }, vcf: { cutoff: 2600, res: 7, fm: 0.6 } },
+    cables: withMod(['sh.out', 'vcf.fm']),
+  },
+  {
+    // Slow 2nd LFO drifts the cutoff for a breathing pad.
+    name: 'SLOW DRIFT',
+    factory: true,
+    params: { lfo2: { rate: 0.18, shape: 0 }, vcf: { cutoff: 5000, fm: 0.4 } },
+    cables: withMod(['lfo2.out', 'vcf.fm']),
+  },
+  {
+    // Envelope sweeps the filter as you play — plucky, vocal.
+    name: 'ENV SWEEP',
+    factory: true,
+    params: { env: { a: 0.25, d: 0.6, s: 0.35, r: 1.2 }, vcf: { cutoff: 900, res: 6, fm: 0.7 } },
+    cables: withMod(['env.out', 'vcf.fm']),
   },
 ]
 

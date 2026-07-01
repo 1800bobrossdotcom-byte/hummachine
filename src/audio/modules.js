@@ -2,31 +2,53 @@
 // the UI (Rack/Module components) are driven from these specs, so a module only
 // needs to be described once.
 //
-// Each module: { id, title, type, jacks[], params[] }
+// Each module: { id, title, type, group, jacks[], params[] }
 //   jack:  { name, kind: 'in'|'out', signal: 'audio'|'cv' }
-//   param: { key, label, min, max, def, curve, unit }  (rendered as a Knob)
+//   param: { key, label, min, max, def, curve, unit }  OR  { key, label, steps[], def }
 //
 // A jack's global id is `${moduleId}.${jackName}` (e.g. "vcf.in").
 
+const WAVES = ['SIN', 'TRI', 'SQR', 'SAW']
+
 export const MODULES = [
   {
-    id: 'voice',
-    title: 'VOICES',
-    type: 'voice',
+    id: 'voice', title: 'VOICES', type: 'voice', group: 'source',
     jacks: [{ name: 'out', kind: 'out', signal: 'audio' }],
     params: [{ key: 'level', label: 'LEVEL', min: 0, max: 1.5, def: 1, curve: 'lin' }],
   },
   {
-    id: 'lfo',
-    title: 'LFO',
-    type: 'lfo',
+    id: 'env', title: 'ENV', type: 'env', group: 'mod',
     jacks: [{ name: 'out', kind: 'out', signal: 'cv' }],
-    params: [{ key: 'rate', label: 'RATE', min: 0.02, max: 12, def: 4, curve: 'log', unit: 'hz' }],
+    params: [
+      { key: 'a', label: 'ATK', min: 0.002, max: 2, def: 0.02, curve: 'log', unit: 's' },
+      { key: 'd', label: 'DEC', min: 0.01, max: 2, def: 0.3, curve: 'log', unit: 's' },
+      { key: 's', label: 'SUS', min: 0, max: 1, def: 0.6, curve: 'lin' },
+      { key: 'r', label: 'REL', min: 0.02, max: 3, def: 0.5, curve: 'log', unit: 's' },
+    ],
   },
   {
-    id: 'vcf',
-    title: 'FILTER',
-    type: 'vcf',
+    id: 'lfo', title: 'LFO', type: 'lfo', group: 'mod',
+    jacks: [{ name: 'out', kind: 'out', signal: 'cv' }],
+    params: [
+      { key: 'rate', label: 'RATE', min: 0.02, max: 12, def: 4, curve: 'log', unit: 'hz' },
+      { key: 'shape', label: 'SHAPE', steps: WAVES, def: 0 },
+    ],
+  },
+  {
+    id: 'lfo2', title: 'LFO 2', type: 'lfo', group: 'mod',
+    jacks: [{ name: 'out', kind: 'out', signal: 'cv' }],
+    params: [
+      { key: 'rate', label: 'RATE', min: 0.02, max: 12, def: 0.8, curve: 'log', unit: 'hz' },
+      { key: 'shape', label: 'SHAPE', steps: WAVES, def: 1 },
+    ],
+  },
+  {
+    id: 'sh', title: 'S&H', type: 'sh', group: 'mod',
+    jacks: [{ name: 'out', kind: 'out', signal: 'cv' }],
+    params: [{ key: 'rate', label: 'RATE', min: 0.1, max: 20, def: 5, curve: 'log', unit: 'hz' }],
+  },
+  {
+    id: 'vcf', title: 'FILTER', type: 'vcf', group: 'audio',
     jacks: [
       { name: 'in', kind: 'in', signal: 'audio' },
       { name: 'fm', kind: 'in', signal: 'cv' },
@@ -39,9 +61,7 @@ export const MODULES = [
     ],
   },
   {
-    id: 'drive',
-    title: 'DRIVE',
-    type: 'drive',
+    id: 'drive', title: 'DRIVE', type: 'drive', group: 'audio',
     jacks: [
       { name: 'in', kind: 'in', signal: 'audio' },
       { name: 'out', kind: 'out', signal: 'audio' },
@@ -49,9 +69,7 @@ export const MODULES = [
     params: [{ key: 'drive', label: 'DRIVE', min: 0, max: 1, def: 0.08, curve: 'lin' }],
   },
   {
-    id: 'delay',
-    title: 'DELAY',
-    type: 'delay',
+    id: 'delay', title: 'DELAY', type: 'delay', group: 'audio',
     jacks: [
       { name: 'in', kind: 'in', signal: 'audio' },
       { name: 'out', kind: 'out', signal: 'audio' },
@@ -63,9 +81,7 @@ export const MODULES = [
     ],
   },
   {
-    id: 'reverb',
-    title: 'REVERB',
-    type: 'reverb',
+    id: 'reverb', title: 'REVERB', type: 'reverb', group: 'audio',
     jacks: [
       { name: 'in', kind: 'in', signal: 'audio' },
       { name: 'out', kind: 'out', signal: 'audio' },
@@ -73,9 +89,31 @@ export const MODULES = [
     params: [{ key: 'mix', label: 'MIX', min: 0, max: 1, def: 0.3, curve: 'lin' }],
   },
   {
-    id: 'vca',
-    title: 'VCA',
-    type: 'vca',
+    id: 'mix', title: 'MIX', type: 'mix', group: 'util',
+    jacks: [
+      { name: 'in1', kind: 'in', signal: 'audio' },
+      { name: 'in2', kind: 'in', signal: 'audio' },
+      { name: 'in3', kind: 'in', signal: 'audio' },
+      { name: 'out', kind: 'out', signal: 'audio' },
+    ],
+    params: [
+      { key: 'lvl1', label: 'CH1', min: 0, max: 1, def: 0.7, curve: 'lin' },
+      { key: 'lvl2', label: 'CH2', min: 0, max: 1, def: 0.7, curve: 'lin' },
+      { key: 'lvl3', label: 'CH3', min: 0, max: 1, def: 0.7, curve: 'lin' },
+    ],
+  },
+  {
+    id: 'mult', title: 'MULT', type: 'mult', group: 'util',
+    jacks: [
+      { name: 'in', kind: 'in', signal: 'audio' },
+      { name: 'out1', kind: 'out', signal: 'audio' },
+      { name: 'out2', kind: 'out', signal: 'audio' },
+      { name: 'out3', kind: 'out', signal: 'audio' },
+    ],
+    params: [],
+  },
+  {
+    id: 'vca', title: 'VCA', type: 'vca', group: 'audio',
     jacks: [
       { name: 'in', kind: 'in', signal: 'audio' },
       { name: 'cv', kind: 'in', signal: 'cv' },
@@ -87,25 +125,24 @@ export const MODULES = [
     ],
   },
   {
-    id: 'out',
-    title: 'OUTPUT',
-    type: 'out',
+    id: 'out', title: 'OUTPUT', type: 'out', group: 'audio',
     jacks: [{ name: 'in', kind: 'in', signal: 'audio' }],
     params: [{ key: 'vol', label: 'VOL', min: 0, max: 1, def: 0.85, curve: 'lin' }],
   },
 ]
 
-// The factory patch cabling: VOICES -> FILTER -> DRIVE -> DELAY -> REVERB -> VCA
-// -> OUTPUT, with the LFO sweeping the filter. Each cable is [outJack, inJack].
-export const DEFAULT_CABLES = [
+// Core audio chain (shared by every patch); presets add their own modulation.
+export const CORE_CHAIN = [
   ['voice.out', 'vcf.in'],
   ['vcf.out', 'drive.in'],
   ['drive.out', 'delay.in'],
   ['delay.out', 'reverb.in'],
   ['reverb.out', 'vca.in'],
   ['vca.out', 'out.in'],
-  ['lfo.out', 'vcf.fm'],
 ]
+
+// Factory default: core chain + LFO sweeping the filter.
+export const DEFAULT_CABLES = [...CORE_CHAIN.map((c) => [...c]), ['lfo.out', 'vcf.fm']]
 
 export function defaultModuleParams() {
   const out = {}

@@ -113,7 +113,7 @@ export default function App() {
               onSave={onSave}
             />
             <p className="hint">
-              {tookOver ? 'you have it — play · drag cables to repatch' : 'listening… play to take over'}
+              {tookOver ? 'you have it — drag jacks to patch · right-click a jack to unpatch' : 'listening… play to take over'}
             </p>
           </div>
 

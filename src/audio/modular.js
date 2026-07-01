@@ -18,6 +18,7 @@ export class Modular {
     this.cables = new Map() // "from|to" -> { from, to }
     this.analyser = null
     this.voiceInput = null // node the sampler connects into
+    this._timers = [] // cleanup thunks (e.g. S&H interval)
     this._build()
   }
 
@@ -57,11 +58,78 @@ export class Modular {
         return { input, out, jacks: { out }, set: (k, v) => k === 'level' && input.gain.setTargetAtTime(v, ctx.currentTime, 0.02) }
       }
       case 'lfo': {
+        const waves = ['sine', 'triangle', 'square', 'sawtooth']
         const osc = new OscillatorNode(ctx, { type: 'sine', frequency: 4 })
         const out = g(1)
         osc.connect(out)
         osc.start()
-        return { osc, out, jacks: { out }, set: (k, v) => k === 'rate' && osc.frequency.setTargetAtTime(v, ctx.currentTime, 0.02) }
+        return {
+          osc, out, jacks: { out },
+          set: (k, v) => {
+            if (k === 'rate') osc.frequency.setTargetAtTime(v, ctx.currentTime, 0.02)
+            else if (k === 'shape') osc.type = waves[Math.round(v)] || 'sine'
+          },
+        }
+      }
+      case 'env': {
+        // ADSR envelope as a ConstantSource driven by the note gate.
+        const cs = new ConstantSourceNode(ctx, { offset: 0 })
+        const out = g(1)
+        cs.connect(out)
+        cs.start()
+        const p = { a: 0.02, d: 0.3, s: 0.6, r: 0.5 }
+        const tc = (x) => Math.max(0.001, x / 3) // exp time-constant approx
+        return {
+          out, cs, jacks: { out },
+          set: (k, v) => { if (k in p) p[k] = v },
+          gateOn: () => {
+            const t = ctx.currentTime
+            cs.offset.cancelScheduledValues(t)
+            cs.offset.setTargetAtTime(1, t, tc(p.a))
+            cs.offset.setTargetAtTime(p.s, t + p.a, tc(p.d))
+          },
+          gateOff: () => {
+            const t = ctx.currentTime
+            cs.offset.cancelScheduledValues(t)
+            cs.offset.setTargetAtTime(0, t, tc(p.r))
+          },
+        }
+      }
+      case 'sh': {
+        // Sample & hold: stepped random CV, re-sampled at RATE.
+        const cs = new ConstantSourceNode(ctx, { offset: 0 })
+        const out = g(1)
+        cs.connect(out)
+        cs.start()
+        const state = { rate: 5, timer: null }
+        const tick = () => cs.offset.setValueAtTime(Math.random() * 2 - 1, ctx.currentTime)
+        const arm = () => {
+          if (state.timer) clearInterval(state.timer)
+          state.timer = setInterval(tick, 1000 / state.rate)
+        }
+        arm()
+        this._timers.push(() => state.timer && clearInterval(state.timer))
+        return { out, cs, jacks: { out }, set: (k, v) => { if (k === 'rate') { state.rate = v; arm() } } }
+      }
+      case 'mix': {
+        const out = g(1)
+        const in1 = g(0.7), in2 = g(0.7), in3 = g(0.7)
+        in1.connect(out); in2.connect(out); in3.connect(out)
+        return {
+          out, jacks: { in1, in2, in3, out },
+          set: (k, v) => {
+            if (k === 'lvl1') in1.gain.setTargetAtTime(v, ctx.currentTime, 0.02)
+            else if (k === 'lvl2') in2.gain.setTargetAtTime(v, ctx.currentTime, 0.02)
+            else if (k === 'lvl3') in3.gain.setTargetAtTime(v, ctx.currentTime, 0.02)
+          },
+        }
+      }
+      case 'mult': {
+        // Passive multiple: one input copied to three outputs.
+        const input = g(1)
+        const out1 = g(1), out2 = g(1), out3 = g(1)
+        input.connect(out1); input.connect(out2); input.connect(out3)
+        return { jacks: { in: input, out1, out2, out3 }, set: () => {} }
       }
       case 'vcf': {
         const input = g(1)
@@ -144,6 +212,20 @@ export class Modular {
       default:
         return { jacks: {}, set: () => {} }
     }
+  }
+
+  // ── Gate (drives envelope modules) ─────────────────────────────────────────
+  gateOn() {
+    for (const m of this.mods.values()) if (m.gateOn) m.gateOn()
+  }
+
+  gateOff() {
+    for (const m of this.mods.values()) if (m.gateOff) m.gateOff()
+  }
+
+  dispose() {
+    this._timers.forEach((fn) => fn())
+    this._timers = []
   }
 
   // ── Params ────────────────────────────────────────────────────────────────

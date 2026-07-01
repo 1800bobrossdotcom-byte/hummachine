@@ -114,9 +114,27 @@ export default function Rack({ engine, modParams, onParam, cables, onAddCable, o
     return `M ${a.x} ${a.y} C ${a.x} ${c1y}, ${b.x} ${c2y}, ${b.x} ${b.y}`
   }
 
+  // Right-click or double-click a jack to unpatch every cable touching it.
+  const clearJack = useCallback(
+    (e) => {
+      const jackEl = e.target.closest('[data-jack]')
+      if (!jackEl) return
+      e.preventDefault()
+      const id = jackEl.dataset.jack
+      cables.filter((c) => c[0] === id || c[1] === id).forEach((c) => onRemoveCable(c[0], c[1]))
+    },
+    [cables, onRemoveCable],
+  )
+
   return (
     <div className="rack-scroll">
-      <div className="rack" ref={rackRef} onPointerDown={startDrag}>
+      <div
+        className="rack"
+        ref={rackRef}
+        onPointerDown={startDrag}
+        onContextMenu={clearJack}
+        onDoubleClick={clearJack}
+      >
         {MODULES.map((spec) => (
           <Module
             key={spec.id}
